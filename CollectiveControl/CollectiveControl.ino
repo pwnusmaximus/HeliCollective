@@ -1,15 +1,17 @@
-#include <ClickEncoder.h>
+//#include <ClickEncoder.h>
+#include <Encoder.h>
 #include <TimerOne.h>
 
 #include <Joystick.h>
 
 #include "ACE128.h"
 #include "ACE128map12345678.h"
-#include <Wire.h>
+#include <Wire.h> //this is a core library
 
-#include <Adafruit_MCP23017.h>
+//#include <Adafruit_MCP23017.h> //this is a bunk library
+#include <Adafruit_MCP23X17.h> //use this instead
 
-Adafruit_MCP23017 mcp;
+Adafruit_MCP23X17 mcp;
 #define ACE128_ARDUINO_PINS
 
 //ACE128 encoder(uint8_t{4,5,6,7,12,13,10,11}, (uint8_t*)encoderMap_87654321);
@@ -34,7 +36,7 @@ Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,
   false  // includeSteering
 );
 // Handle Encoder
-ClickEncoder *handleEnc;
+Encoder *handleEnc;
 int16_t last, value;
 void timerIsr() { handleEnc->service(); }
 
@@ -73,7 +75,7 @@ void setup() {
   myACE.begin();
 
   // Setup Handle Encoder
-  handleEnc = new ClickEncoder(8, 9, A5, 4);
+  handleEnc = new Encoder(8, 9, A5, 4);
   Timer1.initialize(1000);
   Timer1.attachInterrupt(timerIsr);
 
@@ -185,8 +187,8 @@ void loop() {
   }
 
   // Handle Encoder Button
-  ClickEncoder::Button b = handleEnc->getButton();
-  if (b != ClickEncoder::Open) {
+  Encoder::Button b = handleEnc->getButton();
+  if (b != Encoder::Open) {
     Serial.print("Button: ");
     Serial.println(b);
     // TODO & NOTES FOR TOMORROW
