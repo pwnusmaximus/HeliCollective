@@ -1,15 +1,20 @@
-//#include <ClickEncoder.h>
-#include <Encoder.h>
+#include <ClickEncoder.h>
 #include <TimerOne.h>
 
-#include <Joystick.h>
+//---------------------
+//for joystick.h
+//the one in the default library search tool may be incorrect
+//this comes from https://github.com/gmarty2000-ARDUINO/arduino-JOYSTICK/tree/master
+#include <Joystick.h> 
+//---------------------
 
 #include "ACE128.h"
 #include "ACE128map12345678.h"
-#include <Wire.h> //this is a core library
+#include <Wire.h>
 
-//#include <Adafruit_MCP23017.h> //this is a bunk library
-#include <Adafruit_MCP23X17.h> //use this instead
+#include <Adafruit_MCP23X17.h>
+//#include <Adafruit_MCP23017.h>
+//#include <Adafruit_MCP23XXX.h>
 
 Adafruit_MCP23X17 mcp;
 #define ACE128_ARDUINO_PINS
@@ -19,7 +24,9 @@ ACE128 myACE(4,5,6,7,12,13,10,11, (uint8_t*)encoderMap_12345678);
 //int16_t multiturn_encoder_value;
 int16_t axisVal;
 
-//Joystick_ Joystick;
+//Joystick Joystick; 
+// Joystick is the function "class"
+// Joystick_ is the instance name
 Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,
   JOYSTICK_TYPE_JOYSTICK,
   14,     // Number of Buttons
@@ -36,7 +43,7 @@ Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,
   false  // includeSteering
 );
 // Handle Encoder
-Encoder *handleEnc;
+ClickEncoder *handleEnc;
 int16_t last, value;
 void timerIsr() { handleEnc->service(); }
 
@@ -50,32 +57,34 @@ int debugCount = 100;
 
 void setup() {
   // Setup Serial output
+  Joystick.begin(); //this came from Deepseek plz verify
   Serial.begin(19200);
   Serial.println("Collective controller startup");
   
   // Setup MCP23017
-  mcp.begin();
+  // older versions would have used "begin" 
+  mcp.begin_I2C();
 
   // Set Toggle Switch Pin Modes
-  mcp.pinMode(togglePins[0], INPUT); mcp.pullUp(togglePins[0], HIGH);
-  mcp.pinMode(togglePins[1], INPUT); mcp.pullUp(togglePins[1], HIGH);
-  mcp.pinMode(togglePins[2], INPUT); mcp.pullUp(togglePins[2], HIGH);
-  mcp.pinMode(togglePins[3], INPUT); mcp.pullUp(togglePins[3], HIGH);
-  mcp.pinMode(togglePins[4], INPUT); mcp.pullUp(togglePins[4], HIGH);
-  mcp.pinMode(togglePins[5], INPUT); mcp.pullUp(togglePins[5], HIGH);
+  mcp.pinMode(togglePins[0], INPUT); mcp.digitalWrite(togglePins[0], HIGH);
+  mcp.pinMode(togglePins[1], INPUT); mcp.digitalWrite(togglePins[1], HIGH);
+  mcp.pinMode(togglePins[2], INPUT); mcp.digitalWrite(togglePins[2], HIGH);
+  mcp.pinMode(togglePins[3], INPUT); mcp.digitalWrite(togglePins[3], HIGH);
+  mcp.pinMode(togglePins[4], INPUT); mcp.digitalWrite(togglePins[4], HIGH);
+  mcp.pinMode(togglePins[5], INPUT); mcp.digitalWrite(togglePins[5], HIGH);
 
 
   // Push Button Pin Modes
-  mcp.pinMode(15, INPUT); mcp.pullUp(15, HIGH); // Button 1
-  mcp.pinMode(14, INPUT); mcp.pullUp(14, HIGH); // Button 2
-  mcp.pinMode(13, INPUT); mcp.pullUp(13, HIGH); // Button 3
-  mcp.pinMode(12, INPUT); mcp.pullUp(12, HIGH); // Button 4
+  mcp.pinMode(15, INPUT); mcp.digitalWrite(15, HIGH); // Button 1
+  mcp.pinMode(14, INPUT); mcp.digitalWrite(14, HIGH); // Button 2
+  mcp.pinMode(13, INPUT); mcp.digitalWrite(13, HIGH); // Button 3
+  mcp.pinMode(12, INPUT); mcp.digitalWrite(12, HIGH); // Button 4
 
   // Setup Axis encoder
   myACE.begin();
 
   // Setup Handle Encoder
-  handleEnc = new Encoder(8, 9, A5, 4);
+  handleEnc = new ClickEncoder(8, 9, A5, 4);
   Timer1.initialize(1000);
   Timer1.attachInterrupt(timerIsr);
 
@@ -187,8 +196,8 @@ void loop() {
   }
 
   // Handle Encoder Button
-  Encoder::Button b = handleEnc->getButton();
-  if (b != Encoder::Open) {
+  ClickEncoder::Button b = handleEnc->getButton();
+  if (b != ClickEncoder::Open) {
     Serial.print("Button: ");
     Serial.println(b);
     // TODO & NOTES FOR TOMORROW
